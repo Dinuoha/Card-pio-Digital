@@ -4,9 +4,11 @@ import { useMemo, useState } from "react";
 import { CartProvider, useCart } from "@/lib/cart-context";
 import { formatMoney } from "@/lib/format";
 import { getContrastColor, initials } from "@/lib/color";
+import { getOpenStatus } from "@/lib/business-hours";
 import type { CategoryWithProducts, ProductWithAddons, Restaurant } from "@/lib/types";
 import ProductModal from "./ProductModal";
 import CartOverlay from "./CartOverlay";
+import InfoModal from "./InfoModal";
 
 export default function CardapioClient({
   restaurant,
@@ -95,6 +97,12 @@ function CardapioInner({
   const { totalItems, totalPrice, addItem } = useCart();
   const [selectedProduct, setSelectedProduct] = useState<ProductWithAddons | null>(null);
   const [cartOpen, setCartOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+
+  const openStatus = useMemo(
+    () => getOpenStatus(restaurant.business_hours),
+    [restaurant.business_hours]
+  );
 
   const featured = useMemo(
     () => categories.flatMap((c) => c.products).filter((p) => p.is_featured),
@@ -138,11 +146,16 @@ function CardapioInner({
         </div>
         <div className="store-name">{restaurant.name}</div>
         <div className="store-meta">
-          {restaurant.address && <span>{restaurant.address}</span>}
+          {openStatus && (
+            <span className={openStatus.open ? "status-open" : "status-closed"}>
+              {openStatus.label}
+            </span>
+          )}
+          {openStatus && <span className="dot" />}
+          <span className="more-info-link" onClick={() => setInfoOpen(true)}>
+            Mais informações
+          </span>
         </div>
-        {restaurant.opening_hours && (
-          <div className="status-open">{restaurant.opening_hours}</div>
-        )}
       </div>
 
       <div className="page-layout">
@@ -161,15 +174,15 @@ function CardapioInner({
             <div className="store-info">
               <h1>{restaurant.name}</h1>
               <div className="store-meta">
-                {restaurant.opening_hours && (
-                  <span className="status-open">{restaurant.opening_hours}</span>
+                {openStatus && (
+                  <span className={openStatus.open ? "status-open" : "status-closed"}>
+                    {openStatus.label}
+                  </span>
                 )}
-                {restaurant.address && (
-                  <>
-                    <span className="dot" />
-                    <span>{restaurant.address}</span>
-                  </>
-                )}
+                {openStatus && <span className="dot" />}
+                <span className="more-info-link" onClick={() => setInfoOpen(true)}>
+                  Mais informações
+                </span>
               </div>
             </div>
           </div>
@@ -264,6 +277,10 @@ function CardapioInner({
 
       {cartOpen && (
         <CartOverlay restaurant={restaurant} onClose={() => setCartOpen(false)} />
+      )}
+
+      {infoOpen && (
+        <InfoModal restaurant={restaurant} onClose={() => setInfoOpen(false)} />
       )}
     </div>
   );

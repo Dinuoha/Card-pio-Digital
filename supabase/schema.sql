@@ -17,7 +17,10 @@ create table if not exists restaurants (
   whatsapp_number text,
   address text,
   delivery_fee numeric(10, 2),
-  opening_hours text,
+  opening_hours text, -- legado (texto livre); ver business_hours para horário estruturado
+  instagram text,
+  payment_methods text[] not null default '{}', -- chaves: dinheiro | pix_automatico | credito | debito | vale_refeicao
+  business_hours jsonb, -- { seg: {open,close,closed}, ter: {...}, ... dom: {...} }
   created_at timestamptz not null default now()
 );
 

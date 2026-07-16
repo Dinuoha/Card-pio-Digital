@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentRestaurant } from "@/lib/get-current-restaurant";
 import { slugify } from "@/lib/slug";
+import { DAY_ORDER, type BusinessHours } from "@/lib/business-hours";
 
 export async function signOut() {
   const supabase = await createClient();
@@ -248,11 +249,22 @@ export async function updateRestaurantSettings(formData: FormData) {
   const slug = slugify(slugRaw || name);
   const whatsapp_number = String(formData.get("whatsapp_number") ?? "").trim() || null;
   const address = String(formData.get("address") ?? "").trim() || null;
-  const opening_hours = String(formData.get("opening_hours") ?? "").trim() || null;
   const primary_color = String(formData.get("primary_color") ?? "#000000");
   const deliveryFeeRaw = String(formData.get("delivery_fee") ?? "").trim();
   const delivery_fee = deliveryFeeRaw ? Number(deliveryFeeRaw) : null;
   const logo_url = String(formData.get("logo_url") ?? "").trim() || null;
+  const instagram =
+    String(formData.get("instagram") ?? "").trim().replace(/^@/, "") || null;
+  const payment_methods = formData.getAll("payment_methods").map((v) => String(v));
+
+  const business_hours = DAY_ORDER.reduce((acc, day) => {
+    acc[day] = {
+      open: String(formData.get(`hours_${day}_open`) ?? "18:00"),
+      close: String(formData.get(`hours_${day}_close`) ?? "23:00"),
+      closed: formData.get(`hours_${day}_closed`) === "on",
+    };
+    return acc;
+  }, {} as BusinessHours);
 
   if (!name) throw new Error("Nome do restaurante é obrigatório.");
   if (!slug) throw new Error("Slug inválido.");
@@ -265,10 +277,12 @@ export async function updateRestaurantSettings(formData: FormData) {
       slug,
       whatsapp_number,
       address,
-      opening_hours,
       primary_color,
       delivery_fee,
       logo_url,
+      instagram,
+      payment_methods,
+      business_hours,
     })
     .eq("id", restaurant.id);
 

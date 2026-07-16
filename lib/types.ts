@@ -9,6 +9,9 @@ export type Restaurant = {
   address: string | null;
   delivery_fee: number | null;
   opening_hours: string | null;
+  instagram: string | null;
+  payment_methods: string[];
+  business_hours: import("./business-hours").BusinessHours | null;
   created_at: string;
 };
 
