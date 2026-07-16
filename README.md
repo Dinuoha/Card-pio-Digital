@@ -8,7 +8,8 @@ checkout via WhatsApp e painel admin básico.
 
 - Next.js 16 (App Router, TypeScript)
 - Supabase (Postgres + Auth + Storage)
-- Deploy alvo: Vercel
+- Deploy: Vercel (produção em `cardapio-digital-estudio-davson.vercel.app`, deploy
+  automático a cada push na branch `main`)
 
 ## Configuração do Supabase
 
